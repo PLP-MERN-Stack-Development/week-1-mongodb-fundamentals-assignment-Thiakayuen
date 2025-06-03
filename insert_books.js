@@ -134,20 +134,17 @@ const books = [
   }
 ];
 
-// Function to insert books into MongoDB
 async function insertBooks() {
   const client = new MongoClient(uri);
 
   try {
-    // Connect to the MongoDB server
     await client.connect();
     console.log('Connected to MongoDB server');
 
-    // Get database and collection
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
 
-    // Check if collection already has documents
+    // Drop collection if already exists
     const count = await collection.countDocuments();
     if (count > 0) {
       console.log(`Collection already contains ${count} documents. Dropping collection...`);
@@ -155,29 +152,46 @@ async function insertBooks() {
       console.log('Collection dropped successfully');
     }
 
-    // Insert the books
+    // CREATE
     const result = await collection.insertMany(books);
-    console.log(`${result.insertedCount} books were successfully inserted into the database`);
+    console.log(`${result.insertedCount} books were successfully inserted`);
 
-    // Display the inserted books
-    console.log('\nInserted books:');
-    const insertedBooks = await collection.find({}).toArray();
-    insertedBooks.forEach((book, index) => {
-      console.log(`${index + 1}. "${book.title}" by ${book.author} (${book.published_year})`);
+    // READ 
+    console.log('\n📘 In-stock Fiction books:');
+    const fictionBooks = await collection.find({ genre: 'Fiction', in_stock: true }).toArray();
+    fictionBooks.forEach(book => {
+      console.log(`- ${book.title} by ${book.author} (${book.published_year})`);
     });
+
+    // UPDATE 
+    console.log('\n Updating price of "1984"...');
+    const updateResult = await collection.updateOne(
+      { title: '1984' },
+      { $set: { price: 13.99 } }
+    );
+    console.log(`Updated ${updateResult.modifiedCount} book(s)`);
+
+    // DELETE 
+    console.log('\n Deleting book "Animal Farm"...');
+    const deleteResult = await collection.deleteOne({ title: 'Animal Farm' });
+    console.log(`Deleted ${deleteResult.deletedCount} book(s)`);
+
+    // Show final state of collection
+    const finalBooks = await collection.find().toArray();
+    console.log('\n📚 Final list of books in collection:');
+    finalBooks.forEach((book, i) =>
+      console.log(`${i + 1}. "${book.title}" by ${book.author} - $${book.price}`)
+    );
 
   } catch (err) {
     console.error('Error occurred:', err);
   } finally {
-    // Close the connection
     await client.close();
     console.log('Connection closed');
   }
 }
 
-// Run the function
 insertBooks().catch(console.error);
-
 /*
  * Example MongoDB queries you can try after running this script:
  *
@@ -196,3 +210,4 @@ insertBooks().catch(console.error);
  * 5. Find in-stock books:
  *    db.books.find({ in_stock: true })
  */ 
+
