@@ -37,7 +37,7 @@ Your work will be automatically submitted when you push to your GitHub Classroom
 
 1. Complete all tasks in the assignment
 2. Add your `queries.js` file with all required MongoDB queries
-3. Include a screenshot of your M![alt text](image.png)ongoDB database
+3. Include a screenshot of your MongoDB database![alt text](image.png)
 4. Update the README.md with your specific setup instructions
 
 ## MongoDB Setup Instructions
